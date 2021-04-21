@@ -44,7 +44,7 @@ model {
   }
   beta0 ~ dnorm(0, 0.00000001)
   beta1 ~ dnorm(0, 0.00001)
-  sig ~ dunif(0, 10000)
+  sig ~ dunif(0, 100000)
   tau <- 1 / sig^2
   sig2 <- sig^2
 }
@@ -66,15 +66,11 @@ summary(posterior)
 
 ggplot(data = AA_mdat, aes(x = year, y = mkt_fare)) + 
   geom_point(aes(color = city2)) +
-  geom_abline(slope = 0.860, intercept = -1471.07)
+  geom_abline(slope = 2.167, intercept = -4092.45)
 
 ## Advanced linear model for Dummy Variables
 
 #simple lm()
-
-model_comp <- lm(mkt_fare ~ year + city3, data = df)
-summary(model_comp)
-
 
 model_dat2 <- model.matrix(mkt_fare ~ year+city2, data = AA_mdat)
 
@@ -87,6 +83,9 @@ df <- AA_mdat %>%
       str_replace_all(" ", "_") %>%
       str_replace_all("/", "_")
   )
+
+model_comp <- lm(mkt_fare ~ year + city3, data = df)
+summary(model_comp)
 
 X <- model.matrix(mkt_fare ~ year + city3 - 1, data = df)
 
