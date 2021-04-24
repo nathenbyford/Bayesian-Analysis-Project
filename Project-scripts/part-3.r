@@ -34,6 +34,7 @@ ggplot(data = AA_mdat, aes(x = year, y = mkt_fare)) +
   geom_abline(slope = 2.272, intercept = -4302.805)
 
 # Jags model
+set.seed(1)
 
 modelString <- "
 model {
@@ -65,8 +66,11 @@ summary(posterior)
 # visualize using the mean of slope and intercept
 
 ggplot(data = AA_mdat, aes(x = year, y = mkt_fare)) + 
-  geom_point(aes(color = city2)) +
-  geom_abline(slope = 2.167, intercept = -4092.45)
+  geom_point(alpha = .5) +
+  geom_abline(slope = 0.7363957, intercept = -1222.3227, 
+              color = 'goldenrod2', size = 1.2, alpha = .7) +
+  geom_abline(slope = 2.272, intercept = -4302.805, 
+              color = 'steelblue', size = 1.2, alpha = .7)
 
 ## Advanced linear model for Dummy Variables
 
