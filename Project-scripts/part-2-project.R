@@ -183,7 +183,7 @@ ggs_caterpillar(mt) +geom_vline(xintercept = 0,col="red")
 
 mt<-filter(ms,grepl("Beta",Parameter))
 
-jpeg("Two-Param-anova.jpg", width = 500, height = 400)
+jpeg("Two-Param-anova.jpg", width = 1500, height = 1000)
 ggplot(data=mt,aes(x=mt$value,col=Parameter,fill=Parameter)) +
  geom_density(alpha=0.3) + 
  labs(title = "Posterior difference of Delta Airlines and Southwest Airlines out of Dallas ",
