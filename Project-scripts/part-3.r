@@ -20,7 +20,9 @@ AA_mdat$city2 <- as.factor(AA_mdat$city2)
 
 # look at data 
 ggplot(data = AA_mdat, aes(x = year, y = mkt_fare)) + 
-  geom_point(aes(color = city2))
+  geom_point(aes(color = city2), alpha = .5) +
+  labs(title = "Scatter Plot of Flights out of DFW on American Airlines", 
+       color = "Destination", y = "Mean Market Fare (USD)")
 
 # Standard Linear Model
 model <- lm(mkt_fare ~ year, data = AA_mdat)
@@ -67,10 +69,11 @@ summary(posterior)
 
 ggplot(data = AA_mdat, aes(x = year, y = mkt_fare)) + 
   geom_point(alpha = .5) +
-  geom_abline(slope = 0.7363957, intercept = -1222.3227, 
-              color = 'goldenrod2', size = 1.2, alpha = .7) +
   geom_abline(slope = 2.272, intercept = -4302.805, 
-              color = 'steelblue', size = 1.2, alpha = .7)
+              color = 'steelblue', size = 1.2, alpha = .8) +
+  geom_abline(slope = 1.225, intercept = -2202.5665, 
+              color = 'goldenrod2', size = 1.2, alpha = .8) +
+  labs(title = "Simple Linear Regression fit by Approach", y = "Market Fare")
 
 ## Advanced linear model for Dummy Variables
 

@@ -124,7 +124,12 @@ mu_1_post - qt(.975, m + a_1)*(((BSSE + b_1)/(m + a_1))/(m + n_1))^.5
 mu_1_post + qt(.975, m + a_1)*(((BSSE + b_1)/(m + a_1))/(m + n_1))^.5
 
 #classic anova
-(mod <- aov(lm(data=both_dat,mkt_fare~car)))
+library(multcomp)
+aov_mod <- aov(mkt_fare~car,
+           data = both_dat)
+summary(mod)
+post_test <- glht(aov_mod,
+                  linfct = mcp(species = "Tukey"))
 
 TukeyHSD(mod)
 

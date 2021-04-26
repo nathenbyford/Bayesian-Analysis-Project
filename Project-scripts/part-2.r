@@ -14,3 +14,4 @@ WN_high_DFW <- dat %>% filter(car == "WN", mkt_fare > 150, city1 == "Dallas/Fort
 DL_high_DFW <- dat %>% filter(car == "DL", mkt_fare > 150, city1 == "Dallas/Fort Worth, TX")
 
 WN_prices <- WN_high_DFW
+
