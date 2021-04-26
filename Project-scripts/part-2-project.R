@@ -33,7 +33,6 @@ g_boxDL_vec <- as.vector(WN_high_DFW$mkt_fare)
 
 
 
-
 #Model for WN
 
 #prior information
@@ -128,7 +127,9 @@ mu_1_post + qt(.975, m + a_1)*(((BSSE + b_1)/(m + a_1))/(m + n_1))^.5
 (mod <- aov(lm(data=both_dat,mkt_fare~car)))
 
 TukeyHSD(mod)
+
 plot(TukeyHSD(mod))
+
 
 
 
@@ -175,6 +176,8 @@ update(model,n.iter=1000)
 output=coda.samples(model=model,variable.names=c("Beta","Difbeta","Effect"),
                     n.iter=100000,thin=10)
 
+summary(output)
+
 #Plots
 library(ggmcmc)
 ms <-ggs(output) 
@@ -183,9 +186,11 @@ ggs_caterpillar(mt) +geom_vline(xintercept = 0,col="red")
 
 mt<-filter(ms,grepl("Beta",Parameter))
 
-jpeg("Two-Param-anova.jpg", width = 1500, height = 1000)
+ggs_density(mt)
+ggs_histogram(mt)
+
 ggplot(data=mt,aes(x=mt$value,col=Parameter,fill=Parameter)) +
  geom_density(alpha=0.3) + 
  labs(title = "Posterior difference of Delta Airlines and Southwest Airlines out of Dallas ",
     x = "market Fare")
-dev.off()
+

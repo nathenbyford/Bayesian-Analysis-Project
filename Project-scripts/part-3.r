@@ -96,6 +96,10 @@ X <- model.matrix(mkt_fare ~ year + city3 - 1, data = df)
 predictor_list <- X %>% 
   as.data.frame() %>% as_tibble() %>% 
   rename_with(~ .x %>% str_remove("city3")) %>% 
+  rename("x1" = "year", "x2" = "denver", "x3" = "des_moines", "x4" = "fayetteville",
+         "x5" = "kansas_city", "x6" = "louisville", "x7" = "memphis", 
+         "x8" = "mission_mcallen_edinburg", "x9" = "nashville", "x10" = "omaha", 
+         "x11" = "pensacola", "x12" = "st_louis", "x13" = "valparaiso") %>%
   as.list()
 
 data_list <- c(
@@ -136,7 +140,7 @@ model {
 posterior2 <- run.jags(modelString2,
                       n.chains = 2,
                       data = data_list,
-                      monitor = c("int", "denver", "des_moines", "fayetteville", "kansas_city", 
+                      monitor = c("int", "year", "denver", "des_moines", "fayetteville", "kansas_city", 
                                   "louisville", "memphis", "mission_mcallen_edinburg", 
                                   "nashville", "omaha", "pensacola", "st_louis", 
                                   "valparaiso", 'sig2'),
