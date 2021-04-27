@@ -172,7 +172,7 @@ flight_dat <- with(both_dat, list(
   "y" = mkt_fare,
   "ind" = as.integer(as.factor(car)),
   "N" = length(mkt_fare),
-  "p" = length(unique(car)), # fixed here, p was 0
+  "p" = 2, # fixed here, p was 0
   "overall_mean" = mean(mkt_fare)
 ))
 

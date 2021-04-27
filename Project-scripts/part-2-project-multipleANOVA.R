@@ -299,7 +299,7 @@ model {
 
     # Calculate pair wise differences 
     for (n in 1:(j-1)){
-      diffbeta[n,j] <- beta[n] - beta[j]
+      diffbet[n,j] <- beta[n] - beta[j]
     }
   }
 
