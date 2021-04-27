@@ -200,20 +200,51 @@ flight_dat <- with(both_dat, list(
 model <- jags.model(
   textConnection(flight_jags_1),
   data = flight_dat,
+  n.chains = getOption("mc.cores"),
   quiet = TRUE
 )
 
+# i removed thinning here, as chains looked fine
 output <- coda.samples(
   model = model,
   variable.names = c("beta", "diffbeta", "effect"),
-  n.iter = 100000,
-  thin = 10
+  n.iter = 1e4
 )
 
-summary(output)
+summary(output, quantiles = c(.025, .975))
 
-#Plots
-library(ggmcmc)
+
+
+# bayesplot plots ---------------------------------------------------------
+
+# examples of the kind of plots you can do
+# (these may or may not be interesting, not commenting there)
+
+library("bayesplot")
+
+mcmc_dens(output)
+mcmc_dens(output, regex_pars = "beta")
+mcmc_dens(output, regex_pars = "^beta")
+mcmc_dens(output, regex_pars = "^effect")
+
+mcmc_hist(output, regex_pars = "^effect")
+
+mcmc_acf_bar(output) # => thinning not needed
+
+mcmc_intervals(output)
+
+mcmc_combo(output, regex_pars = "^beta")
+mcmc_combo(output, combo = c("hist", "trace"), regex_pars = "^beta")
+
+
+
+
+# ggmcmc plots ------------------------------------------------------------
+# i'd probably recommend against these,
+# but i don't have a problem if you use them
+
+library("ggmcmc")
+
 ms <- ggs(output) 
 mt <- filter(ms, grepl("diffbeta", Parameter))
 ggs_caterpillar(mt) + geom_vline(xintercept = 0, col = "red")
