@@ -31,7 +31,7 @@ DL_high_DFW <- dat %>%
 
 AA_high_DFW <- dat %>% 
   filter(
-    car == "aa", 
+    car == "AA", 
     mkt_fare > 150, 
     city1 == "Dallas/Fort Worth, TX"
     )
@@ -78,7 +78,7 @@ length(CO_vec)
 
 
 # make a boxplot
-ggplot(both_dat, aes(mkt_fare, car)) +
+ggplot(all_dat, aes(mkt_fare, car)) +
   geom_boxplot(aes(fill = car)) +
   scale_y_discrete(
     breaks = c("DL", "WN"),
