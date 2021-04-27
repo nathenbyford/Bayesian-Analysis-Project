@@ -6,7 +6,7 @@
 
 # load packages -----------------------------------------------------------
 
-library("tidyverse"); theme_set(theme_minimal())
+library("tidyverse"); theme_set(theme_bw())
 library("parallel"); options(mc.cores = detectCores())
 
 
@@ -50,14 +50,14 @@ length(DL_vec)
 
 # make a boxplot
 ggplot(both_dat, aes(mkt_fare, car)) +
-  geom_boxplot() +
+  geom_boxplot(aes(fill = car)) +
   scale_y_discrete(
     breaks = c("DL", "WN"),
-    labels = c("What's DL?", "What's WN?")
+    labels = c("Delta", "Southwest")
   ) +
   labs(
-    "x" = "Better X-axis title",
-    "title" = "Title your graphic"
+    "x" = "Airlines",
+    "title" = "Prices by Airline"
   ) +
   theme(
     axis.title.y = element_blank()
