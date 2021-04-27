@@ -125,77 +125,92 @@ mu_1_post + qt(.975, m + a_1)*(((BSSE + b_1)/(m + a_1))/(m + n_1))^.5
 
 #classic anova
 library(multcomp)
-aov_mod <- aov(mkt_fare~car,
-           data = both_dat)
-summary(mod)
-post_test <- glht(aov_mod,
-                  linfct = mcp(species = "Tukey"))
+aov_mod <- aov(mkt_fare~car, data = both_dat)
+summary(aov_mod)
+post_test <- glht(aov_mod, linfct = mcp(species = "Tukey"))
 
-TukeyHSD(mod)
+TukeyHSD(aov_mod)
 
-plot(TukeyHSD(mod))
+plot(TukeyHSD(aov_mod))
 
 
 
 
 # Bayesian ANOVA
 library(rjags)
-flight_jags_1="
+flight_jags_1 <- "
 model {
-#######  Likelihood
-for (i in 1:N) {                   
-mu[i]<- Beta[ind[i]]              
-y[i] ~ dnorm(mu[i],tau)         
 
-}
-############## Uninformative priors
-for (j in 1:p) {
-Beta[j] ~ dnorm(0,0.0001)
+  # likelihood
+  for (i in 1:N) {
+    mu[i] <- beta[ind[i]]
+    y[i] ~ dnorm(mu[i], tau)
+  }
 
-Effect[j] <- Beta[j]-overall_mean  ### Calculate difference from overall mean
+  # uninformative priors
+  for (j in 1:p) {
+    beta[j] ~ dnorm(0, 0.001)
+    
+    # calculate difference from overall mean
+    effect[j] <- beta[j] - overall_mean
+    
+    # calculate pair wise differences 
+    for (n in 1:(j-1)){
+      diffbeta[n,j] <- beta[n] - beta[j]
+    }
+  }
 
-################### Calculate pair wise differences 
-for (n in 1:(j-1)){
-Difbeta[n,j] <- Beta[n]-Beta[j]
-}
-}
-
-tau ~ dgamma(scale, rate)   ## Prior for normal distribution precision.
-scale ~ dunif(0, 1)       ### Hyper parameters for tau.
-rate ~ dunif(0, 1)
+  tau ~ dgamma(scale, rate) # prior for normal precision
+  scale ~ dunif(0, 1) # Hyper parameters for tau
+  rate ~ dunif(0, 1)
 
 }
 "
 
 # Organize data
-flight_dat=list(y=both_dat$mkt_fare,
-              ind=as.factor(both_dat$car),
-              N=length(both_dat$mkt_fare),
-              p=length(levels(both_dat$car)),
-              overall_mean=mean(both_dat$mkt_fare))
+flight_dat <- with(both_dat, list(
+  "y" = mkt_fare,
+  "ind" = as.integer(as.factor(car)),
+  "N" = length(mkt_fare),
+  "p" = length(unique(car)), # fixed here, p was 0
+  "overall_mean" = mean(mkt_fare)
+))
 
 
-model=jags.model(textConnection(flight_jags_1),data=flight_dat,quiet=T)
+model <- jags.model(
+  textConnection(flight_jags_1),
+  data = flight_dat,
+  quiet = TRUE
+)
 
-update(model,n.iter=1000)
-output=coda.samples(model=model,variable.names=c("Beta","Difbeta","Effect"),
-                    n.iter=100000,thin=10)
+output <- coda.samples(
+  model = model,
+  variable.names = c("beta", "diffbeta", "effect"),
+  n.iter = 100000,
+  thin = 10
+)
 
 summary(output)
 
 #Plots
 library(ggmcmc)
-ms <-ggs(output) 
-mt<-filter(ms,grepl("Difbeta",Parameter))
-ggs_caterpillar(mt) +geom_vline(xintercept = 0,col="red")
+ms <- ggs(output) 
+mt <- filter(ms, grepl("diffbeta", Parameter))
+ggs_caterpillar(mt) + geom_vline(xintercept = 0, col = "red")
 
-mt<-filter(ms,grepl("Beta",Parameter))
+mt <- filter(ms, grepl("beta", Parameter))
 
 ggs_density(mt)
 ggs_histogram(mt)
 
-ggplot(data=mt,aes(x=mt$value,col=Parameter,fill=Parameter)) +
- geom_density(alpha=0.3) + 
- labs(title = "Posterior difference of Delta Airlines and Southwest Airlines out of Dallas ",
-    x = "market Fare")
+ggplot(data = mt, aes(
+  x = mt$value,
+  col = Parameter,
+  fill = Parameter
+)) +
+  geom_density(alpha = 0.3) +
+  labs(
+    title = "Posterior difference of Delta Airlines and Southwest Airlines out of Dallas ",
+    x = "market Fare"
+  )
 
