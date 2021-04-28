@@ -6,13 +6,20 @@
 #Load Packages
 library(tidyverse)
 library(runjags)
-library(GGally)
-theme_set(theme_bw())
+library(caret)
+library(GGally); theme_set(theme_bw())
 
 # Load Data
 dat <- read_csv('./Data/STA4360_data.csv')
-dat <- dat %>% rename(year = Year)
-AA_high_DFW <- dat %>% filter(car == "AA", mkt_fare > 150, city1 == "Dallas/Fort Worth, TX")
+dat <- dat %>% 
+  rename(year = Year)
+
+AA_high_DFW <- dat %>% 
+  filter(
+    car == "AA", 
+    mkt_fare > 150, 
+    city1 == "Dallas/Fort Worth, TX"
+  )
 
 # setup data for model
 AA_mdat <- AA_high_DFW %>% select(mkt_fare, year, city2)
@@ -24,9 +31,22 @@ ggplot(data = AA_mdat, aes(x = year, y = mkt_fare)) +
   labs(title = "Scatter Plot of Flights out of DFW on American Airlines", 
        color = "Destination", y = "Mean Market Fare (USD)")
 
+
+# split data
+train_int <- createDataPartition(y = AA_mdat$mkt_fare, p = 0.9)[[1]]
+
+train <- AA_mdat[train_int, ]
+test <- AA_mdat[-train_int, ]
+
+
 # Standard Linear Model
-model <- lm(mkt_fare ~ year, data = AA_mdat)
+model <- lm(mkt_fare ~ year, data = train)
 summary(model)
+
+# test
+test_pred <- predict(model, test)
+test_lmcomp <- test_pred - test$mkt_fare
+test_lmcomp
 
 #Seems to work pretty well
 
@@ -40,30 +60,55 @@ set.seed(1)
 
 modelString <- "
 model {
-  ## likelihood
+  # likelihood
   for (i in 1:N) {
     y[i] ~ dnorm(mu[i], tau)
     mu[i] <- beta0 + beta1*x_1[i]
   }
+
+  # predict values for the test sample
+  for (j in 1:M) {
+  pred[j] <- beta0 + beta1*t_1[j]
+  price_pred[j] ~ dnorm(pred[j], tau)
+  }
+
   beta0 ~ dnorm(0, 0.00000001)
   beta1 ~ dnorm(0, 0.00001)
   sig ~ dunif(0, 100000)
   tau <- 1 / sig^2
   sig2 <- sig^2
+
 }
 "
 ## We use a large posterior
-the_data <- with(AA_mdat, list('y' = mkt_fare, 'x_1' = year, 'N' = length(mkt_fare)))
+the_data <- list('y' = train$mkt_fare, 
+  'x_1' = train$year, 
+  'N' = length(train$mkt_fare), 
+  't_1' = test$year, 
+  'M' = length(test$mkt_fare))
 
 posterior <- run.jags(modelString,
                       n.chains = 2,
                       data = the_data,
-                      monitor = c('beta0', 'beta1', 'sig2'),
+                      monitor = c('beta0', 'beta1', 'sig2', 'price_pred'),
                       adapt = 1000,
                       burnin = 5000,
                       sample = 50000)
 
-summary(posterior)
+summary(posterior, )
+
+preds <- as.data.frame(summary(posterior))[4:23, 1:4]
+pred_comps <- as_tibble(
+  cbind(
+    preds, 
+    true_value = test$mkt_fare
+))
+
+pred_comps
+
+# cross validation
+
+datafit <- drop.k(posterior, 'x_1')
 
 # visualize using the mean of slope and intercept
 
@@ -71,7 +116,7 @@ ggplot(data = AA_mdat, aes(x = year, y = mkt_fare)) +
   geom_point(alpha = .5) +
   geom_abline(slope = 2.272, intercept = -4302.805, 
               color = 'steelblue', size = 1.2, alpha = .8) +
-  geom_abline(slope = 1.225, intercept = -2202.5665, 
+  geom_abline(slope = 1.667, intercept = -3089.346, 
               color = 'goldenrod2', size = 1.2, alpha = .8) +
   labs(title = "Simple Linear Regression fit by Approach", y = "Market Fare")
 

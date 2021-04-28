@@ -266,9 +266,10 @@ post_test <- glht(aov_mod, linfct = mcp(species = "Tukey"))
 
 TukeyHSD(aov_mod)
 
+jpeg("Plots/multiple-anova.jpg", width = 1000, height = 750)
 plot(TukeyHSD(aov_mod))
-
-
+dev.off()
+ 
 
 # Bayesian anova ------------------------------------------------------
 

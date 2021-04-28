@@ -212,7 +212,7 @@ output <- coda.samples(
 )
 
 summary(output, quantiles = c(.025, .975))
-
+extract(output, what = 'samplers')
 
 
 # bayesplot plots ---------------------------------------------------------
